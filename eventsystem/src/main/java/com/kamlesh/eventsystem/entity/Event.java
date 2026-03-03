@@ -29,6 +29,8 @@ public class Event {
 
     private String description;
 
+    private String imageUrl;
+
     @NotBlank(message = "Location is required")
     private String location;
 

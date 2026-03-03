@@ -30,9 +30,15 @@ public class SecurityConfig {
                     .requestMatchers("/auth/**").permitAll()
                     .requestMatchers("/admin/**").hasRole("ADMIN")
                     .requestMatchers("/user/**").hasAnyRole("USER","ADMIN")
-                    
+                       // Swagger
+            .requestMatchers(
+                    "/v3/api-docs/**",
+                     "/v3/api-docs",
+                    "/swagger-ui/**",
+                    "/swagger-ui.html"
+            ).permitAll()
                     .requestMatchers(HttpMethod.POST, "/events/create").hasRole("ADMIN")
-                    .requestMatchers(HttpMethod.GET, "/events/all").permitAll()
+                    .requestMatchers(HttpMethod.GET, "/events").permitAll()
                      .requestMatchers("/bookings/**").authenticated()
                     .anyRequest().authenticated()
             )

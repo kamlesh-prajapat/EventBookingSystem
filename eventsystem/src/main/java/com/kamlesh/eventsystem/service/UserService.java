@@ -1,7 +1,10 @@
 package com.kamlesh.eventsystem.service;
 
+import com.kamlesh.eventsystem.dto.AdminDashboardStats;
 import com.kamlesh.eventsystem.entity.User;
 import com.kamlesh.eventsystem.model.Role;
+import com.kamlesh.eventsystem.repository.BookingRepository;
+import com.kamlesh.eventsystem.repository.EventRepository;
 import com.kamlesh.eventsystem.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 
@@ -16,7 +19,7 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-
+    
     
     public User createUser(User user) {
 
@@ -33,4 +36,6 @@ public class UserService {
     public List<User> getAllUsers() {
         return userRepository.findAll();
     }
+
+   
 }
