@@ -25,6 +25,13 @@ public List<Booking> myBookings(Authentication authentication) {
     return bookingService.getBookingsByUser(email);
 }
 
+ @GetMapping
+public List<Booking> getAllBookings(Authentication authentication) {
+    String email = authentication.getName();
+
+    return bookingService.getAllBookings(email);
+}
+
    @PostMapping
 public Booking bookEvent(@RequestParam Long eventId,
                          Authentication authentication) {

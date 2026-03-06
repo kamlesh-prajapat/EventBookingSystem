@@ -81,4 +81,11 @@ public String cancelBooking(Long bookingId) {
 
     return "Booking cancelled successfully";
 }
+
+
+public List<Booking> getAllBookings(String email) {
+    List<Booking> list = bookingRepository.findAll();
+ 
+  return bookingRepository.findAll();
+}
 }

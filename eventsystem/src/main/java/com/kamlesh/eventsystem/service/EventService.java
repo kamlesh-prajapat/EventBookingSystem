@@ -83,22 +83,74 @@ public class EventService {
 
 public String uploadImage(Long eventId, MultipartFile file) throws IOException {
 
+    // Validate file
+    if (file == null || file.isEmpty()) {
+        throw new RuntimeException("File is empty");
+    }
+
+    // Validate file size (5MB max)
+    long maxFileSize = 5 * 1024 * 1024; // 5MB
+    if (file.getSize() > maxFileSize) {
+        throw new RuntimeException("File size exceeds maximum limit of 5MB");
+    }
+
+    // Validate file type
+    String contentType = file.getContentType();
+    if (contentType == null || !contentType.startsWith("image/")) {
+        throw new RuntimeException("File must be an image");
+    }
+
     Event event = eventRepository.findById(eventId)
             .orElseThrow(() -> new RuntimeException("Event not found"));
 
     String uploadDir = "uploads/";
-
     String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
-
     Path filePath = Paths.get(uploadDir + fileName);
 
-    Files.createDirectories(filePath.getParent());
+    try {
+        Files.createDirectories(filePath.getParent());
+        Files.write(filePath, file.getBytes());
 
-    Files.write(filePath, file.getBytes());
+        event.setImageUrl(fileName);
+        eventRepository.save(event);
 
-    event.setImageUrl(fileName);
-    eventRepository.save(event);
+        return "Image uploaded successfully";
+    } catch (IOException e) {
+        throw new RuntimeException("Failed to upload image: " + e.getMessage());
+    }
+}
 
-    return "Image uploaded successfully";
+public Event updateEvent(Long id, Event updatedEvent) {
+    Event event = eventRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Event not found"));
+
+    if (updatedEvent.getTitle() != null) {
+        event.setTitle(updatedEvent.getTitle());
+    }
+    if (updatedEvent.getDescription() != null) {
+        event.setDescription(updatedEvent.getDescription());
+    }
+    if (updatedEvent.getLocation() != null) {
+        event.setLocation(updatedEvent.getLocation());
+    }
+    if (updatedEvent.getEventDate() != null) {
+        event.setEventDate(updatedEvent.getEventDate());
+    }
+    if (updatedEvent.getPrice() != null) {
+        event.setPrice(updatedEvent.getPrice());
+    }
+    if (updatedEvent.getCapacity() != null) {
+        event.setCapacity(updatedEvent.getCapacity());
+    }
+
+    return eventRepository.save(event);
+}
+
+public byte[] getImageFile(String filename) throws IOException {
+    Path filePath = Paths.get("uploads/" + filename);
+    if (!Files.exists(filePath)) {
+        throw new RuntimeException("Image not found");
+    }
+    return Files.readAllBytes(filePath);
 }
 }
