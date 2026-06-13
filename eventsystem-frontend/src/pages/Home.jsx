@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import api from "../api/axios"
 import Navbar from "../components/Navbar"
 import "./Pages.css"
@@ -8,6 +8,7 @@ function Home() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const [page, setPage] = useState(0)
+  const failedImages = useRef(new Set())
   const [totalPages, setTotalPages] = useState(1)
   const [bookingId, setBookingId] = useState(null)
 
@@ -41,6 +42,10 @@ function Home() {
           sortBy: "eventDate",
           direction: "asc"
         }
+      })
+      console.log("📊 Events API Response:", response.data.content)
+      response.data.content.forEach(event => {
+        console.log(`Event ${event.id}: imageUrl = "${event.imageUrl}"`)
       })
       setEvents(response.data.content)
       setTotalPages(response.data.totalPages)
@@ -79,10 +84,15 @@ function Home() {
     return '#4caf50'
   }
 
+    console.log("eveents", events)
+
+  // Simple SVG placeholder (no external calls needed)
+  const defaultImagePlaceholder = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='200'%3E%3Crect fill='%23e0e0e0' width='300' height='200'/%3E%3Ctext x='50%' y='50%' font-size='20' fill='%23999' text-anchor='middle' dy='.3em'%3EEvent Image%3C/text%3E%3C/svg%3E"
+
   return (
     <div className="page-wrapper">
       <Navbar />
-      
+
       <main className="container">
         <div className="page-header">
           <h1>🎉 Available Events</h1>
@@ -111,18 +121,35 @@ function Home() {
         ) : (
           <>
             <div className="events-grid">
+          
               {events.map((event) => (
                 <div key={event.id} className="event-card">
                   {/* Event Image */}
                   {event.imageUrl && (
                     <div className="event-image-container">
-                      <img 
-                        src={`/api/events/image/${event.imageUrl}`}
+                      <img
+                        src={`${api.defaults.baseURL}/events/image/${event.imageUrl}`}
                         alt={event.title}
                         className="event-image"
-                        onError={(e) => {
-                          e.target.src = "https://via.placeholder.com/300x200?text=Event+Image"
+                        onLoad={() => {
+                          if (!failedImages.current.has(event.id)) {
+                            console.log(`✅ Image loaded successfully for event ${event.id}: ${event.imageUrl}`)
+                          }
                         }}
+                        onError={(e) => {
+                          console.error(`❌ Failed to load image for event ${event.id}: ${event.imageUrl}`)
+                          failedImages.current.add(event.id)
+                          e.target.src = defaultImagePlaceholder
+                        }}
+                      />
+                    </div>
+                  )}
+                  {!event.imageUrl && (
+                    <div className="event-image-container">
+                      <img
+                        src={defaultImagePlaceholder}
+                        alt={event.title}
+                        className="event-image"
                       />
                     </div>
                   )}
@@ -132,7 +159,7 @@ function Home() {
                       <h3 className="event-title">{event.title}</h3>
                       <p className="event-location">📍 {event.location}</p>
                     </div>
-                    <span 
+                    <span
                       className="availability-badge"
                       style={{ backgroundColor: getAvailabilityColor(event.availableSeats) }}
                     >
@@ -164,7 +191,7 @@ function Home() {
                   </div>
 
                   <div className="event-footer">
-                    <button 
+                    <button
                       className="btn-primary"
                       onClick={() => handleBooking(event.id)}
                       disabled={bookingId === event.id || event.availableSeats === 0}
@@ -185,9 +212,9 @@ function Home() {
 
             {/* Pagination */}
             <div className="pagination-container">
-              <button 
+              <button
                 className="btn-outline"
-                onClick={() => fetchEvents(page - 1)} 
+                onClick={() => fetchEvents(page - 1)}
                 disabled={page === 0}
               >
                 ← Previous
@@ -197,9 +224,9 @@ function Home() {
                 Page <strong>{page + 1}</strong> of <strong>{totalPages}</strong>
               </div>
 
-              <button 
+              <button
                 className="btn-outline"
-                onClick={() => fetchEvents(page + 1)} 
+                onClick={() => fetchEvents(page + 1)}
                 disabled={page >= totalPages - 1}
               >
                 Next →

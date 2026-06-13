@@ -133,7 +133,7 @@ function EditEvent() {
           formDataWithImage.append("file", imageFile)
 
           await api.post(
-            `/events/${id}/upload-image`,
+            ADMIN_CONFIG.API_ENDPOINTS.UPLOAD_IMAGE(id),
             formDataWithImage,
             {
               headers: {
@@ -153,12 +153,13 @@ function EditEvent() {
       
       // Redirect back to manage events after 2 seconds
       setTimeout(() => {
-        navigate("/manage-events")
+        navigate("/")
       }, 2000)
     } catch (error) {
       const errorMsg = error.response?.data?.message || "Failed to update event"
       setError(errorMsg)
       console.error("Error updating event:", error)
+       console.log("error",error.response.data)
     } finally {
       setSubmitting(false)
     }
@@ -366,7 +367,7 @@ function EditEvent() {
               borderRadius: "4px"
             }}>
               <img
-                src={`/api/events/image/${currentImage}`}
+                src={`${api.defaults.baseURL}/events/image/${currentImage}`}
                 alt="Current"
                 style={{ maxWidth: "100%", maxHeight: "200px" }}
                 onError={(e) => {

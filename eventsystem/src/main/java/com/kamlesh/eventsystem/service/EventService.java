@@ -106,16 +106,22 @@ public String uploadImage(Long eventId, MultipartFile file) throws IOException {
     String uploadDir = "uploads/";
     String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
     Path filePath = Paths.get(uploadDir + fileName);
+    System.out.println("📸 Uploading image for event " + eventId);
+    System.out.println("📁 Full file path: " + filePath.toAbsolutePath());
+    System.out.println("📎 File name: " + fileName);
 
     try {
         Files.createDirectories(filePath.getParent());
         Files.write(filePath, file.getBytes());
+        System.out.println("✅ File written successfully to: " + filePath.toAbsolutePath());
 
         event.setImageUrl(fileName);
         eventRepository.save(event);
+        System.out.println("✅ Image URL saved to database: " + fileName);
 
         return "Image uploaded successfully";
     } catch (IOException e) {
+        System.out.println("❌ Failed to upload image: " + e.getMessage());
         throw new RuntimeException("Failed to upload image: " + e.getMessage());
     }
 }
@@ -148,9 +154,14 @@ public Event updateEvent(Long id, Event updatedEvent) {
 
 public byte[] getImageFile(String filename) throws IOException {
     Path filePath = Paths.get("uploads/" + filename);
+    System.out.println("🔍 Attempting to load image: " + filePath.toAbsolutePath());
+    System.out.println("📁 File exists: " + Files.exists(filePath));
+    
     if (!Files.exists(filePath)) {
-        throw new RuntimeException("Image not found");
+        System.out.println("❌ Image file not found: " + filePath.toAbsolutePath());
+        throw new RuntimeException("Image not found: " + filename);
     }
+    System.out.println("✅ Image loaded successfully: " + filename);
     return Files.readAllBytes(filePath);
 }
 }

@@ -66,18 +66,25 @@ public Optional<Event> getEventById(@PathVariable Long id) {
         return eventService.updateEvent(id, updatedEvent);
     }
 
-    // 👑 ADMIN only - Upload/Update event image
-    @PostMapping("/{id}/upload-image")
-    public String uploadEventImage(
-            @PathVariable Long id,
-            @RequestParam("file") MultipartFile file
-    ) throws IOException {
-        return eventService.uploadImage(id, file);
-    }
-
-    // 👥 Everyone - Retrieve event image
-    @GetMapping(value = "/image/{filename}", produces = MediaType.IMAGE_JPEG_VALUE)
-    public byte[] getEventImage(@PathVariable String filename) throws IOException {
-        return eventService.getImageFile(filename);
+    //  Everyone - Retrieve event image
+    @GetMapping(value = "/image/{filename}")
+    public ResponseEntity<byte[]> getEventImage(@PathVariable String filename) throws IOException {
+        System.out.println("Image request received for: " + filename);
+        byte[] imageData = eventService.getImageFile(filename);
+        
+        // Detect content type based on file extension
+        MediaType contentType = MediaType.IMAGE_JPEG;
+        if (filename.toLowerCase().endsWith(".png")) {
+            contentType = MediaType.IMAGE_PNG;
+        } else if (filename.toLowerCase().endsWith(".gif")) {
+            contentType = MediaType.IMAGE_GIF;
+        } else if (filename.toLowerCase().endsWith(".webp")) {
+            contentType = MediaType.valueOf("image/webp");
+        }
+        
+        System.out.println("✅ Serving image with content type: " + contentType);
+        return ResponseEntity.ok()
+                .contentType(contentType)
+                .body(imageData);
     }
 }
